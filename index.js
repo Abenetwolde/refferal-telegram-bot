@@ -10,8 +10,8 @@ const Stage = require('telegraf/stage')
 const Scene = require('telegraf/scenes/base')
 const rateLimit = require('telegraf-ratelimit')
 const { text } = config
-const bot = new telegraf(data.token, {telegram: {webhookReply: false}})
-let db 
+const bot = new telegraf('5983123857:AAHcl_WxnLCLVYgDnE_kpjAoWY7sJAhvPgI', {telegram: {webhookReply: false}})
+let db =null
 
 const buttonsLimit = {
   window: 1000,
@@ -28,14 +28,18 @@ const buttonsLimit = {
 bot.use(rateLimit(buttonsLimit))
 
 
-mongo.connect('mongodb+srv://abbot:80110847@cluster0.ltsikfd.mongodb.net/?retryWrites=true&w=majority', {useNewUrlParser: true}, (err, client) => {
+mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
   if (err) {
     sendError(err)
+    console.log("error")
+  }
+  else{
+    console.log("mongoDB connect")
   }
 
-  db = client.db('refbot')
+  db = client.db('bot')
   bot.startWebhook('/refbot', null, 2104)
-  // bot.startPolling()
+ bot.startPolling()
 })
 
 
@@ -48,13 +52,35 @@ stage.register(getNumber)
 
 
 bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
+  let tgData = await bot.telegram.getChatMember(data.channel, ctx.from.id) // user`s status on the channel
+  let subscribed
+  ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
   try {
-    ctx.reply(
+    subscribed? ctx.reply(
       text.hello + ctx.from.id,
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
         [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')]
+      ]))
+      .webPreview(false)
+    ):ctx.reply(
+      
+      text.hello + ctx.from.id,
+      Extra
+      .markup(Markup.inlineKeyboard([
+        ctx.reply(
+          text.hello + ctx.from.id,
+          Extra
+          .markup(Markup.inlineKeyboard([
+            [Markup.urlButton('📥 በመጀመሪያ የቴሌግራም ቻናላችንን መቀላቀል አለብዎ ', data.chanLink),
+            Markup.callbackButton('🔄 Restart', 'main')
+            ],
+            []
+          ]))
+          .webPreview(false)
+        )
+       
       ]))
       .webPreview(false)
     )
@@ -69,13 +95,26 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
 })
 
 bot.start(async (ctx) => {
+  let tgData = await bot.telegram.getChatMember(data.channel, ctx.from.id) // user`s status on the channel
+    let subscribed
+    ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
   try {
-    ctx.reply(
+    subscribed? ctx.reply(
       text.hello + ctx.from.id,
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+        [ Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
         [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')]
+      ]))
+      .webPreview(false)
+    ):ctx.reply(
+      text.hello + ctx.from.id,
+      Extra
+      .markup(Markup.inlineKeyboard([
+        [Markup.urlButton('📥 በመጀመሪያ የቴሌግራም ቻናላችንን መቀላቀል አለብዎ ', data.chanLink),
+        Markup.callbackButton('🔄 Restart', 'main')
+        ],
+        []
       ]))
       .webPreview(false)
     )
@@ -87,22 +126,46 @@ bot.start(async (ctx) => {
     sendError(err, ctx)
   }
 })
-
+{
 bot.action('main', async (ctx) => {
-  ctx.answerCbQuery()
-  ctx.scene.leave('getNumber')
-
-  ctx.editMessageText(
-    text.hello + ctx.from.id,
-    Extra
-    .markup(Markup.inlineKeyboard([
-      [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-      [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')],
-    ]))
-    .webPreview(false)
-  )
-    .catch((err) => sendError(err, ctx))
-})
+  let tgData = await bot.telegram.getChatMember(data.channel, ctx.from.id) // user`s status on the channel
+    let subscribed
+    ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
+    try {
+      subscribed&& ctx.answerCbQuery()
+      subscribed&&ctx.scene.leave('getNumber')
+    
+      subscribed&&ctx.editMessageText(
+        text.hello + ctx.from.id,
+        Extra
+        .markup(Markup.inlineKeyboard([
+          [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+          [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')],
+        ]))
+        .webPreview(false)
+      )
+      // !subscribed&&ctx.editMessageText(
+      //   'You didn`t performed no condition. Collect 1000 {currency} by inviting friends' +
+      //   'and subscribe the channel ' + data.chanLink + '',
+      //   Extra
+      //   .markup(Markup.inlineKeyboard([
+      //     [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+      //     [Markup.urlButton('📥 Subscribe the channel', data.chanLink)],
+      //     [Markup.callbackButton('◀️ Back', 'balance')]
+      //   ]))
+      //   .webPreview(false)
+      // )
+       
+      let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+      if (dbData.length === 0) {
+        db.collection('allUsers').insertOne({userId: ctx.from.id, virgin: true, payments: 0})
+      }
+    } catch (err) {
+      sendError(err, ctx)
+    }
+  
+    
+})}
 
 
 bot.action('balance', async (ctx) => {
@@ -114,14 +177,14 @@ bot.action('balance', async (ctx) => {
     let sum, payments
 
     if (thisUsersData[0].virgin) {
-      sum = notPaid.length * 200 + 200
+      sum = notPaid.length * 2 + 2
     } else {
-      sum = notPaid.length * 200
+      sum = notPaid.length * 2
     }
     if (thisUsersData[0].payments === 0) {
       payments = ''
     } else {
-      payments = '\nУже выплачено: ' + thisUsersData[0].payments
+      payments = '\n ትንሹ ማውጣት የሚችሉት የገንዘብ መጠን : ' + thisUsersData[0].payments
     }
   
     ctx.editMessageText(
@@ -148,13 +211,13 @@ bot.action('withdraw', async (ctx) => {
 
     let sum, friendsLeft
     if (thisUsersData[0].virgin) { // if user hasn`t got gift till
-      sum = notPaid.length * 200 + 200
+      sum = notPaid.length *2 + 2
       friendsLeft = 4 - notPaid.length
-      minSum = 1000 
+      minSum = 10
     } else {
-      sum = notPaid.length * 200
+      sum = notPaid.length * 2
       friendsLeft = 25 - notPaid.length
-      minSum = 5000
+      minSum = 10
     }
 
     if (!('number' in thisUsersData[0])) {
@@ -214,7 +277,7 @@ bot.action('withdraw', async (ctx) => {
       ctx.editMessageText(
         'Your balance: ' + sum + ' {currency}, minimal sum for witdraw is ' + minSum +' {currency}. ' + 
         'You should invite yet : ' + friendsLeft + 
-        ' more persons. \nHere`s your link, share it: t.me/RefOneBot?start=' + ctx.from.id,
+        ' more persons. \nHere`s your link, share it: t.me/abtrtrtbot?start=' + ctx.from.id,
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
@@ -293,10 +356,10 @@ bot.action('get_number', async (ctx) => {
     ctx.scene.enter('getNumber')
   
     ctx.editMessageText(
-      'Enter your number in form +998971234567:',
+      'Enter your number in form +251947081180:',
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ Отменить', 'number')]
+        [Markup.callbackButton('◀️ Add Number', 'number')]
       ]))
       )
         .catch((err) => sendError(err, ctx))
@@ -305,8 +368,8 @@ bot.action('get_number', async (ctx) => {
   }
 })
 
-getNumber.hears(/^.+998[0-9]{9}$/, async (ctx) => { // replace 998 to your country`s code or turn off regexp
-  ctx.reply('Ваш номер: ' + ctx.message.text,
+getNumber.hears(/^.+251[0-9]{9}$/, async (ctx) => { // replace 998 to your country`s code or turn off regexp
+  ctx.reply('Your Number: ' + ctx.message.text,
     Extra
     .markup(Markup.inlineKeyboard([
       [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('🖊 Edit', 'get_number')]

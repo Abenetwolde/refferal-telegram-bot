@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^3.2.2",
+    "mongodb-core": "3.2.2",
+    "nodemon": "^2.0.20",
     "telegraf": "^3.28",
-    "mongodb":"^3.2.2",
-    "telegraf-ratelimit":"2.0.0",
-    "urlencode":"1.1.0"
+    "telegraf-ratelimit": "2.0.0",
+    "urlencode": "1.1.0"
   }
 }
