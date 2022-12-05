@@ -9,9 +9,15 @@ const session = require('telegraf/session')
 const Stage = require('telegraf/stage')
 const Scene = require('telegraf/scenes/base')
 const rateLimit = require('telegraf-ratelimit')
+const { createServer } = require('http')
 const { text } = config
+ http=require("http");
+const Server=createServer((req,res)=>{
+  res.end("server is running")
+})
 const bot = new telegraf('5983123857:AAHcl_WxnLCLVYgDnE_kpjAoWY7sJAhvPgI', {telegram: {webhookReply: false}})
 let db =null
+
 
 const buttonsLimit = {
   window: 1000,
@@ -61,7 +67,7 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 ስልክ ቁጥር', 'number')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -103,8 +109,8 @@ bot.start(async (ctx) => {
       text.hello + ctx.from.id,
       Extra
       .markup(Markup.inlineKeyboard([
-        [ Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')]
+        [ Markup.urlButton('📨 ሰው ለመጋበዝ ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥር', 'number')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -139,8 +145,8 @@ bot.action('main', async (ctx) => {
         text.hello + ctx.from.id,
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-          [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')],
+          [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥርr', 'number')],
         ]))
         .webPreview(false)
       )
@@ -177,9 +183,9 @@ bot.action('balance', async (ctx) => {
     let sum, payments
 
     if (thisUsersData[0].virgin) {
-      sum = notPaid.length * 2 + 2
+      sum = notPaid.length * 1 + 1
     } else {
-      sum = notPaid.length * 2
+      sum = notPaid.length * 1
     }
     if (thisUsersData[0].payments === 0) {
       payments = ''
@@ -188,10 +194,10 @@ bot.action('balance', async (ctx) => {
     }
   
     ctx.editMessageText(
-      'You balance now: ' + sum + ' {currency}. You`ve invited ' + allRefs.length + ' persons.' + payments,
+      'አሁን ያለዎት ሂሳብ: ' + sum + ' ብር . እስካሁን የጋበዙት ' + allRefs.length + ' ሰው.' + payments,
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('💸 Withdraw', 'withdraw')]
+        [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
     )
       .catch((err) => sendError(err, ctx))
@@ -211,22 +217,22 @@ bot.action('withdraw', async (ctx) => {
 
     let sum, friendsLeft
     if (thisUsersData[0].virgin) { // if user hasn`t got gift till
-      sum = notPaid.length *2 + 2
-      friendsLeft = 4 - notPaid.length
+      sum = notPaid.length *1 + 1
+      friendsLeft = 10 - notPaid.length
       minSum = 10
     } else {
-      sum = notPaid.length * 2
-      friendsLeft = 25 - notPaid.length
+      sum = notPaid.length * 1
+      friendsLeft = 10 - notPaid.length
       minSum = 10
     }
 
     if (!('number' in thisUsersData[0])) {
       return ctx.editMessageText(
-        'You didn`t add your number.',
+        'እባክዎ ስልክ ቁጥርዎን ያስገቡ.',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.callbackButton('◀️ Main page', 'main')],
-          [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')],
+          [Markup.callbackButton('◀️ ዋና ገጽ', 'main')],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥር', 'number')],
         ]))
         .webPreview(false)
       )
@@ -235,10 +241,10 @@ bot.action('withdraw', async (ctx) => {
 
     if (sum >= minSum && subscribed) {
       ctx.editMessageText(
-        '✅ Your request is accepted. You`ll get message about payment as soon as or admins pay you.', 
+        '✅ ጥያቄዎ በሂደት ላይ ነው በአጭር ጊዜ ውስጥ ስለ ክፍያዎ እናሳውቅዎታለን .', 
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.callbackButton('◀️ Main page', 'main')]
+          [Markup.callbackButton('◀️ ዋና ገጽ', 'main')]
         ]))
       )
         .catch((err) => sendError(err, ctx))
@@ -246,7 +252,7 @@ bot.action('withdraw', async (ctx) => {
       bot.telegram.sendMessage( // send message to admin
         data.admins[1],
         'New request. \nUser: [' + ctx.from.first_name + '](tg://user?id=' + ctx.from.id + ')\n' +
-        'The sum: ' + sum + ' {currency}. \nNumber: ' + thisUsersData[0].number,
+        'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData[0].number,
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.callbackButton('✅ Paid', 'paid_' + ctx.from.id)]
@@ -267,34 +273,34 @@ bot.action('withdraw', async (ctx) => {
         'You didn`t subscribe to the channel ' + data.chanLink + '. Make that and press "Withdraw" again.',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.urlButton('📥 Subscribe the channel', data.chanLink)],
-          [Markup.callbackButton('◀️ Back', 'balance')]
+          [Markup.urlButton('📥 Subscribe የቴሌግራም ቻናችንን ይቀላቀሉ ', data.chanLink)],
+          [Markup.callbackButton('◀️ ለመመለስ', 'balance')]
         ]))
         .webPreview(false)
       )
         .catch((err) => sendError(err, ctx))
     } else if (sum < minSum && subscribed) {
       ctx.editMessageText(
-        'Your balance: ' + sum + ' {currency}, minimal sum for witdraw is ' + minSum +' {currency}. ' + 
-        'You should invite yet : ' + friendsLeft + 
-        ' more persons. \nHere`s your link, share it: t.me/abtrtrtbot?start=' + ctx.from.id,
+        'ያለዎት ሂሳብ : ' + sum + ' ማውጣት የሚችሉት በትንሹ ' + minSum +' ብር. ' + 
+        'ለማውጣት ተጭማሪ  : ' + friendsLeft + 
+        ' ይጋብዙ . \n የእርስዎ መጋበዣ ሊንክ ያጋሩ: t.me/abtrtrtbot?start=' + ctx.from.id,
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-          [Markup.callbackButton('◀️ Back', 'balance')]
+          [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+          [Markup.callbackButton('◀️ ለመመለስ', 'balance')]
         ]))
         .webPreview(false)
       )
         .catch((err) => sendError(err, ctx))
     } else {
       ctx.editMessageText(
-        'You didn`t performed no condition. Collect 1000 {currency} by inviting friends' +
-        'and subscribe the channel ' + data.chanLink + '',
+        'ገንዘብዎን ለማውጣት መስፈርቱን አላሟሉም . እባክዎ በመጀመሪያ የእስዎን ሊንክ ለጉዋደኞችዎ በመላክ እና ' +
+        'የቴሌግራም ቻናችንን እንዲቀላቀሉ ያድርጉ ' + data.chanLink + '',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-          [Markup.urlButton('📥 Subscribe the channel', data.chanLink)],
-          [Markup.callbackButton('◀️ Back', 'balance')]
+          [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+          [Markup.urlButton('📥 የቴሌግራም ቻናችንን ይቀላቀሉ', data.chanLink)],
+          [Markup.callbackButton('◀️ ለመመለስ', 'balance')]
         ]))
         .webPreview(false)
       )
@@ -312,7 +318,7 @@ bot.action(/paid_[1-9]/, async (ctx) => {
   
     ctx.editMessageText(ctx.update.callback_query.message.text + '\n\n✅ Paid')
       .catch((err) => sendError(err, ctx))
-    bot.telegram.sendMessage(userId, 'Your withdraw was paid.')
+    bot.telegram.sendMessage(userId, 'ሂሳብዎ ወጪ ሆኗል .')
       .catch((err) => sendError(err, ctx))
   } catch (err) {
     sendError(err, ctx)
@@ -327,19 +333,19 @@ bot.action('number', async (ctx) => {
     
     if ('number' in dbData[0]) {
       ctx.editMessageText(
-        'Your number: ' + dbData[0].number + '\n❗️ Check it! On this num we will withdraw your money.',
+        'የእርስዎ ቁጥር: ' + dbData[0].number + '\n❗️ ገንዘብ የሚያወጡበት በዚህ ስልክ ቁጥር ስለሆነ ልክ መሆኑን እባክዎ ያረጋግጡ ',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('🖊 Edit', 'get_number')]
+          [Markup.callbackButton('◀️ ለመመለስ', 'main'), Markup.callbackButton('🖊 ለማስተካከል', 'get_number')]
         ])) 
         )
           .catch((err) => sendError(err, ctx))
     } else {
       ctx.editMessageText(
-        'You didn`t added your number yet.',
+        'ስልክዎን አላስገቡም ',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('🖊 Add num', 'get_number')]
+          [Markup.callbackButton('◀️ ለመመለስ', 'main'), Markup.callbackButton('🖊 ስልክ ቁጥርዎን ያስገቡ', 'get_number')]
         ]))
       )
         .catch((err) => sendError(err, ctx))
@@ -356,10 +362,10 @@ bot.action('get_number', async (ctx) => {
     ctx.scene.enter('getNumber')
   
     ctx.editMessageText(
-      'Enter your number in form +251947081180:',
+      'ስልክ ቁጥርዎን በዚህ ፎርም ያስገቡ +2519********:',
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ Add Number', 'number')]
+        [Markup.callbackButton('◀️ ስልክ ቁጥርዎን ያስገቡ', 'number')]
       ]))
       )
         .catch((err) => sendError(err, ctx))
@@ -369,10 +375,10 @@ bot.action('get_number', async (ctx) => {
 })
 
 getNumber.hears(/^.+251[0-9]{9}$/, async (ctx) => { // replace 998 to your country`s code or turn off regexp
-  ctx.reply('Your Number: ' + ctx.message.text,
+  ctx.reply('የእርስዎ ቁጥር: ' + ctx.message.text,
     Extra
     .markup(Markup.inlineKeyboard([
-      [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('🖊 Edit', 'get_number')]
+      [Markup.callbackButton('◀️ ለመመለስ', 'main'), Markup.callbackButton('🖊 ለማስተካከል', 'get_number')]
     ]))
   )
     .catch((err) => sendError(err, ctx))
@@ -405,8 +411,8 @@ async function sendError(err, ctx) {
           text.hello + ctx.from.id,
           Extra
           .markup(Markup.inlineKeyboard([
-            [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-            [Markup.callbackButton('💵 Balance', 'balance'), Markup.callbackButton('📱 My number', 'number')],
+            [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
+            [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥር', 'number')],
           ]))
           .webPreview(false)
         )
@@ -430,4 +436,10 @@ bot.catch((err) => {
 
 process.on('uncaughtException', (err) => {
   sendError(err)
+})
+const port=4000
+Server.listen(port, (err)=>{
+  if(!err){
+    console.log("server is running at "+port)
+  }
 })
