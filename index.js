@@ -15,7 +15,7 @@ const { text } = config
 const Server=createServer((req,res)=>{
   res.end("server is running")
 })
-const bot = new telegraf('5983123857:AAHcl_WxnLCLVYgDnE_kpjAoWY7sJAhvPgI', {telegram: {webhookReply: false}})
+const bot = new telegraf('5897043349:AAFvl8-Bl7420lyvHNXEoYNlW2a0G8J7QfI', {telegram: {webhookReply: false}})
 let db =null
 
 
@@ -67,7 +67,7 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱የኔ ስልክ ቁጥር', 'number')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -80,9 +80,9 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
           Extra
           .markup(Markup.inlineKeyboard([
             [Markup.urlButton('📥 በመጀመሪያ የቴሌግራም ቻናላችንን መቀላቀል አለብዎ ', data.chanLink),
-            Markup.callbackButton('🔄 Restart', 'main')
+          
             ],
-            []
+            [  Markup.callbackButton('🔄 Restart', 'main')]
           ]))
           .webPreview(false)
         )
@@ -110,7 +110,7 @@ bot.start(async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [ Markup.urlButton('📨 ሰው ለመጋበዝ ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -118,9 +118,9 @@ bot.start(async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📥 በመጀመሪያ የቴሌግራም ቻናላችንን መቀላቀል አለብዎ ', data.chanLink),
-        Markup.callbackButton('🔄 Restart', 'main')
+      
         ],
-        []
+        [  Markup.callbackButton('🔄 Restart', 'main')]
       ]))
       .webPreview(false)
     )
@@ -146,7 +146,7 @@ bot.action('main', async (ctx) => {
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥርr', 'number')],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')],
         ]))
         .webPreview(false)
       )
@@ -232,7 +232,7 @@ bot.action('withdraw', async (ctx) => {
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.callbackButton('◀️ ዋና ገጽ', 'main')],
-          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱  ስልክ ቁጥር', 'number')],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')],
         ]))
         .webPreview(false)
       )
@@ -281,9 +281,9 @@ bot.action('withdraw', async (ctx) => {
         .catch((err) => sendError(err, ctx))
     } else if (sum < minSum && subscribed) {
       ctx.editMessageText(
-        'ያለዎት ሂሳብ : ' + sum + ' ማውጣት የሚችሉት በትንሹ ' + minSum +' ብር. ' + 
+        'ያለዎት ሂሳብ : ' + sum + 'ብር ነው ማውጣት የሚችሉት በትንሹ ' + minSum +' ብር ሲሆን ' + 
         'ለማውጣት ተጭማሪ  : ' + friendsLeft + 
-        ' ይጋብዙ . \n የእርስዎ መጋበዣ ሊንክ ያጋሩ: t.me/abtrtrtbot?start=' + ctx.from.id,
+        ' ይጋብዙ . \n የእርስዎ መጋበዣ ሊንክ ያጋሩ: t.me/PlacetobeEthiopiabot?start=' + ctx.from.id,
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
@@ -345,7 +345,7 @@ bot.action('number', async (ctx) => {
         'ስልክዎን አላስገቡም ',
         Extra
         .markup(Markup.inlineKeyboard([
-          [Markup.callbackButton('◀️ ለመመለስ', 'main'), Markup.callbackButton('🖊 ስልክ ቁጥርዎን ያስገቡ', 'get_number')]
+          [Markup.callbackButton('◀️ ለመመለስ', 'main'), Markup.callbackButton('🖊ስልክ ቁጥርዎን ለማስገባት...', 'get_number')]
         ]))
       )
         .catch((err) => sendError(err, ctx))
@@ -365,7 +365,7 @@ bot.action('get_number', async (ctx) => {
       'ስልክ ቁጥርዎን በዚህ ፎርም ያስገቡ +2519********:',
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ ስልክ ቁጥርዎን ያስገቡ', 'number')]
+        [Markup.callbackButton('◀️ ስልክ ቁጥርዎን ለማስገባት...', 'number')]
       ]))
       )
         .catch((err) => sendError(err, ctx))
