@@ -53,7 +53,7 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
 
   db = client.db('bot')
   bot.startWebhook('/refbot', null, 2104)
- bot.startPolling(`https://p2brefferalbot-api.onrender.com)
+ bot.startPolling()
 })
 
 
