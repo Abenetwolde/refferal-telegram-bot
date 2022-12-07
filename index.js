@@ -18,7 +18,15 @@ const Server=createServer((req,res)=>{
 const bot = new telegraf('5897043349:AAFvl8-Bl7420lyvHNXEoYNlW2a0G8J7QfI', {telegram: {webhookReply: false}})
 let db =null
 
-
+const PRODUCTION = true;
+if (PRODUCTION) {
+  bot.telegram.setWebhook(`https://p2brefferalbot-api.onrender.com/${data.token}`).then(console.log);
+  bot.startWebhook(`/${process.env.BOT_TOKEN}`, null, process.env.PORT);
+} else {
+  bot.launch()
+      .then(() => console.log("Bot Launched"))
+      .catch(console.log);
+}
 const buttonsLimit = {
   window: 1000,
   limit: 1,
@@ -45,7 +53,7 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
 
   db = client.db('bot')
   bot.startWebhook('/refbot', null, 2104)
- bot.startPolling()
+ bot.startPolling(`https://p2brefferalbot-api.onrender.com)
 })
 
 
