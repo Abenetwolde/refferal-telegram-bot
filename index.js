@@ -19,6 +19,9 @@ const bot = new telegraf('5897043349:AAFvl8-Bl7420lyvHNXEoYNlW2a0G8J7QfI', {tele
 let db =null
 
 const PRODUCTION = true;
+bot.use(session());
+// bot.use(stage.middleware());
+
 if (PRODUCTION) {
   bot.telegram.setWebhook(`https://p2brefferalbot-api.onrender.com/${data.token}`).then(console.log);
   bot.startWebhook(`/${process.env.BOT_TOKEN}`, null, process.env.PORT);
@@ -52,8 +55,8 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
   }
 
   db = client.db('bot')
-  bot.startWebhook('/refbot', null, 2104)
- bot.startPolling()
+  bot.startWebhook(`https://p2brefferalbot-api.onrender.com/`, null, 2104)
+//  bot.startPolling()
 })
 
 
