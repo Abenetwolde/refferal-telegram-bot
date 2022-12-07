@@ -15,15 +15,15 @@ const { text } = config
 const Server=createServer((req,res)=>{
   res.end("server is running")
 })
-const bot = new telegraf( /* {telegram: {webhookReply: false}} */)
+const bot = new telegraf(data.token /* {telegram: {webhookReply: false}} */)
 let db =null
 
 const PRODUCTION = true;
-bot.use(session());
+
 // bot.use(stage.middleware());
 
 if (PRODUCTION) {
-  bot.telegram.setWebhook(`https://tg-uoz5.onrender.com${data.token}`).then(console.log);
+  bot.telegram.startPolling(`https://tg-uoz5.onrender.com${data.token}`).then(console.log);
   bot.startWebhook(`/${data.token}`, null, process.env.PORT);
 } else {
   bot.launch()
@@ -55,7 +55,7 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
   }
 
   db = client.db('bot')
-  bot.startWebhook(`https://p2brefferalbot-api.onrender.com/`, null, 2104)
+  // bot.startWebhook(`https://p2brefferalbot-api.onrender.com/`, null, 2104)
 //  bot.startPolling()
 })
 
