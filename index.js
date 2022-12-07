@@ -24,7 +24,7 @@ bot.use(session());
 
 if (PRODUCTION) {
   bot.telegram.setWebhook(`https://p2brefferalbot-api.onrender.com/${data.token}`).then(console.log);
-  bot.startWebhook(`/${process.env.BOT_TOKEN}`, null, process.env.PORT);
+  bot.startWebhook(`/${data.token}`, null, process.env.PORT);
 } else {
   bot.launch()
       .then(() => console.log("Bot Launched"))
