@@ -15,7 +15,7 @@ const { text } = config
 const Server=createServer((req,res)=>{
   res.end("server is running")
 })
-const bot = new telegraf('5897043349:AAFvl8-Bl7420lyvHNXEoYNlW2a0G8J7QfI', {telegram: {webhookReply: false}})
+const bot = new telegraf( /* {telegram: {webhookReply: false}} */)
 let db =null
 
 const PRODUCTION = true;
@@ -23,7 +23,7 @@ bot.use(session());
 // bot.use(stage.middleware());
 
 if (PRODUCTION) {
-  bot.telegram.setWebhook(`https://p2brefferalbot-api.onrender.com/${data.token}`).then(console.log);
+  bot.telegram.setWebhook(`https://tg-uoz5.onrender.com${data.token}`).then(console.log);
   bot.startWebhook(`/${data.token}`, null, process.env.PORT);
 } else {
   bot.launch()
