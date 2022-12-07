@@ -5,6 +5,6 @@ module.exports = {
   chanLink: 'https://t.me/p2bbtest', // can get this in channel`s settings
   paymentsChan: 'https://t.me/p2bbtest', // test chan
   inviteLink: 't.me/${https://t.me/PlacetobeEthiopiabot}?start=params', // params - only user id or something extra
-  admins: ['Ab_ETH_Dev', '2126443079'],
-  kh: '2126443079'
+  admins: [ '1895054210'],
+  kh: '1895054210'
 }
