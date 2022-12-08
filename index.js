@@ -22,14 +22,14 @@ const PRODUCTION = true;
 
 // bot.use(stage.middleware());
 
-// if (PRODUCTION) {
-//   bot.startPolling()
-//   bot.startWebhook(`/${data.token}`, null, 4000);
-// } else {
-//   bot.launch()
-//       .then(() => console.log("Bot Launched"))
-//       .catch(console.log);
-// }
+if (PRODUCTION) {
+  bot.startPolling(`https://tg-uoz5.onrender.com/${data.token}`)
+ // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
+} else {
+  // bot.launch()
+  //     .then(() => console.log("Bot Launched"))
+  //     .catch(console.log);
+}
 const buttonsLimit = {
   window: 1000,
   limit: 1,
@@ -55,7 +55,7 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
   }
 
   db = client.db('bot')
-   bot.startWebhook(`https://tg-uoz5.onrender.com${data.token}`, null, 4000)
+   bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
 // bot.startPolling()
 })
 
