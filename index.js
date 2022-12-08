@@ -1,7 +1,8 @@
 const telegraf = require('telegraf')
 const config = require('./config')
 const data = require('./data')
-const mongo = require('mongodb').MongoClient
+// const mongo = require('mongodb').MongoClient
+const mongoose = require("mongoose");
 const urlencode = require('urlencode')
 const Extra = require('telegraf/extra')
 const Markup = require('telegraf/markup')
@@ -22,11 +23,11 @@ const PRODUCTION = true;
 
 // bot.use(stage.middleware());
 
-if (PRODUCTION) {
+if (!PRODUCTION) {
   bot.startPolling(`https://tg-uoz5.onrender.com/${data.token}`)
  // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
 } else {
-  // bot.launch()
+ //  bot.launch()
   //     .then(() => console.log("Bot Launched"))
   //     .catch(console.log);
 }
@@ -45,21 +46,37 @@ const buttonsLimit = {
 bot.use(rateLimit(buttonsLimit))
 
 
-mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
-  if (err) {
-    sendError(err)
-    console.log("error")
-  }
-  else{
-    console.log("mongoDB connect")
-  }
+// mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
+//   if (err) {
+//     sendError(err)
+//     console.log("error")
+//   }
+//   else{
+//     console.log("mongoDB connect")
+//   }
+const connect=mongoose.connect(data.mongoLink, {
+   useNewUrlParser: true,
+   useUnifiedTopology: true
+});
+if(connect){
+  console.log("connect")
+}
 
-  db = client.db('bot')
-   bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
-// bot.startPolling()
-})
+ // db = client.db('bot')
+  // bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
+bot.startPolling()
 
-
+const UserSchema = {
+  userId: String,
+  virgin: String,
+  inviter:String,
+  payments: {
+    type: String,
+    default: 1,
+  },
+  number:String
+}; 
+const User = mongoose.model("User", UserSchema);
 const stage = new Stage()
 bot.use(session())
 bot.use(stage.middleware())
@@ -102,9 +119,23 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
       .webPreview(false)
     )
     
-    let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+   // let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+    let dbData = await User.find({
+      userId: ctx.from.id
+  });
+ 
+  //console.log("datavccccccccccccccccccccccccccccccccccc"+dbData)
     if (dbData.length === 0 && ctx.from.id != +ctx.match[1]) {
-      db.collection('allUsers').insertOne({userId: ctx.from.id, inviter: +ctx.match[1], virgin: true, paid: false, payments: 0})
+     console.log(+ctx.match[1]+"no user")
+     const newuser = new User({userId: ctx.from.id, inviter: ctx.match[1], virgin: true, paid: false, payments: 0});
+  
+     try {
+       await newuser.save();
+       
+     } catch (error) {
+     
+     }
+      // db.collection('allUsers').insertOne({userId: ctx.from.id, inviter: +ctx.match[1], virgin: true, paid: false, payments: 0})
     }
   } catch (err) {
     sendError(err, ctx)
@@ -135,9 +166,20 @@ bot.start(async (ctx) => {
       ]))
       .webPreview(false)
     )
-    let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+    let dbData = await User.find({
+      userId: ctx.from.id
+  });
+    //let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
     if (dbData.length === 0) {
-      db.collection('allUsers').insertOne({userId: ctx.from.id, virgin: true, payments: 0})
+      const newuser = new User({userId: ctx.from.id,virgin: true, payments: 0});
+  
+      try {
+        await newuser.save();
+        
+      } catch (error) {
+      
+      }
+      //db.collection('allUsers').insertOne({userId: ctx.from.id, virgin: true, payments: 0})
     }
   } catch (err) {
     sendError(err, ctx)
@@ -172,10 +214,23 @@ bot.action('main', async (ctx) => {
       //   ]))
       //   .webPreview(false)
       // )
-       
-      let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+      const dbData = await User.find({
+        userId: ctx.from.id
+    });
+      //let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
       if (dbData.length === 0) {
-        db.collection('allUsers').insertOne({userId: ctx.from.id, virgin: true, payments: 0})
+    const dbData = await User.find({
+      userId: ctx.from.id
+  });
+  const newuser = new User({userId: ctx.from.id, virgin: true, payments: 0});
+  
+  try {
+    await newuser.save();
+    
+  } catch (error) {
+  
+  }
+        //db.collection('allUsers').insertOne({userId: ctx.from.id, virgin: true, payments: 0})
       }
     } catch (err) {
       sendError(err, ctx)
@@ -188,17 +243,27 @@ bot.action('main', async (ctx) => {
 bot.action('balance', async (ctx) => {
   try {
     ctx.answerCbQuery()
-    let notPaid = await db.collection('allUsers').find({inviter: ctx.from.id, paid: false}).toArray() // only not paid invited users
-    let allRefs = await db.collection('allUsers').find({inviter: ctx.from.id}).toArray() // all invited users
-    let thisUsersData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+   // let notPaid = await db.collection('allUsers').find({inviter: ctx.from.id, paid: false}).toArray() // only not paid invited users
+   let notPaid= await User.find({
+    inviter: ctx.from.id, paid: false
+});
+let allRefs= await User.find({
+  inviter: ctx.from.id
+});
+    //let allRefs = await db.collection('allUsers').find({inviter: ctx.from.id}).toArray() // all invited users
+    let thisUsersData= await User.find({
+      userId: ctx.from.id
+  });
+    //let thisUsersData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
     let sum, payments
 
-    if (thisUsersData[0].virgin) {
+    if (thisUsersData.virgin) {
+      console.log(notPaid)
       sum = notPaid.length * 1 + 1
     } else {
       sum = notPaid.length * 1
     }
-    if (thisUsersData[0].payments === 0) {
+    if (thisUsersData.payments === 0) {
       payments = ''
     } else {
       payments = '\n ትንሹ ማውጣት የሚችሉት የገንዘብ መጠን : ' + thisUsersData[0].payments
@@ -220,14 +285,20 @@ bot.action('balance', async (ctx) => {
 bot.action('withdraw', async (ctx) => {
   try {
     ctx.answerCbQuery()
-    let notPaid = await db.collection('allUsers').find({inviter: ctx.from.id, paid: false}).toArray() // only not paid invited users
+    let notPaid= await User.find({
+      inviter: ctx.from.id, paid: false
+  });
+   // let notPaid = await db.collection('allUsers').find({inviter: ctx.from.id, paid: false}).toArray() // only not paid invited users
     let tgData = await bot.telegram.getChatMember(data.channel, ctx.from.id) // user`s status on the channel
     let subscribed, minSum
     ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
-    let thisUsersData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
 
+   // let thisUsersData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+  let thisUsersData= await User.find({
+    userId: ctx.from.id
+});
     let sum, friendsLeft
-    if (thisUsersData[0].virgin) { // if user hasn`t got gift till
+    if (thisUsersData.virgin) { // if user hasn`t got gift till
       sum = notPaid.length *1 + 1
       friendsLeft = 10 - notPaid.length
       minSum = 10
@@ -237,7 +308,7 @@ bot.action('withdraw', async (ctx) => {
       minSum = 10
     }
 
-    if (!('number' in thisUsersData[0])) {
+    if (!('number' in thisUsersData)) {
       return ctx.editMessageText(
         'እባክዎ ስልክ ቁጥርዎን ያስገቡ.',
         Extra
@@ -263,7 +334,7 @@ bot.action('withdraw', async (ctx) => {
       bot.telegram.sendMessage( // send message to admin
         data.admins[1],
         'New request. \nUser: [' + ctx.from.first_name + '](tg://user?id=' + ctx.from.id + ')\n' +
-        'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData[0].number,
+        'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData.number,
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.callbackButton('✅ Paid', 'paid_' + ctx.from.id)]
@@ -273,12 +344,18 @@ bot.action('withdraw', async (ctx) => {
         .catch((err) => sendError(err, ctx))
       
       for (let key of notPaid) {
-        db.collection('allUsers').updateOne({userId: key.userId}, {$set: {paid: true}}, {upsert: true}) // mark refs as paid
-          .catch((err) => sendError(err, ctx))
+        await User.findOneAndUpdate(
+          {userId: key.userId},{$set: {paid: true}},{upsert: true}
+      );
+      await User.findOneAndUpdate(
+        {userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData.payments + sum}}, {upsert: true}
+    );
+        // db.collection('allUsers').updateOne({userId: key.userId}, {$set: {paid: true}}, {upsert: true}) // mark refs as paid
+        //   .catch((err) => sendError(err, ctx))
       }
 
-      db.collection('allUsers').updateOne({userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData[0].payments + sum}}, {upsert: true})
-        .catch((err) => sendError(err, ctx))
+      // db.collection('allUsers').updateOne({userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData[0].payments + sum}}, {upsert: true})
+      //   .catch((err) => sendError(err, ctx))
     } else if (sum >= minSum && !subscribed) {
       ctx.editMessageText(
         'You didn`t subscribe to the channel ' + data.chanLink + '. Make that and press "Withdraw" again.',
@@ -340,9 +417,12 @@ bot.action(/paid_[1-9]/, async (ctx) => {
 bot.action('number', async (ctx) => {
   try {
     ctx.answerCbQuery()
-    let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
+    let dbData= await User.find({
+      userId: ctx.from.id
+  });
+   // let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
     
-    if ('number' in dbData[0]) {
+    if ('number' in dbData) {
       ctx.editMessageText(
         'የእርስዎ ቁጥር: ' + dbData[0].number + '\n❗️ ገንዘብ የሚያወጡበት በዚህ ስልክ ቁጥር ስለሆነ ልክ መሆኑን እባክዎ ያረጋግጡ ',
         Extra
@@ -393,9 +473,11 @@ getNumber.hears(/^.+251[0-9]{9}$/, async (ctx) => { // replace 998 to your count
     ]))
   )
     .catch((err) => sendError(err, ctx))
-
-  db.collection('allUsers').updateOne({userId: ctx.from.id}, {$set: {number: ctx.message.text}}, {upsert: true})
-  .catch((err) => sendError(err, ctx))
+    await User.findOneAndUpdate(
+      {userId: ctx.from.id}, {$set: {number: ctx.message.text}}, {upsert: true}
+  );
+  // db.collection('allUsers').updateOne({userId: ctx.from.id}, {$set: {number: ctx.message.text}}, {upsert: true})
+  // .catch((err) => sendError(err, ctx))
   ctx.scene.leave('getNumber')
 })
 
@@ -403,7 +485,10 @@ getNumber.hears(/^.+251[0-9]{9}$/, async (ctx) => { // replace 998 to your count
 bot.command('getmembers', async (ctx) => {
   if (data.admins.includes(ctx.from.id)) {
     try {
-      let dbData = await db.collection('allUsers').find({}).toArray()
+      let dbData= await User.find({
+     
+    });
+      //let dbData = await db.collection('allUsers').find({}).toArray()
       ctx.reply('🌀 All users: ' + dbData.length)
     } catch (err) {
       sendError(err, ctx)

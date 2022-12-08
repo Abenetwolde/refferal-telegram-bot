@@ -8,12 +8,9 @@
   },
   "keywords": [],
   "author": "",
-
-
   "dependencies": {
     "http": "^0.0.1-security",
-    "mongodb": "^3.2.2",
-    "mongodb-core": "3.2.2",
+    "mongoose": "^6.8.0",
     "nodemon": "^2.0.20",
     "telegraf": "^3.28",
     "telegraf-ratelimit": "2.0.0",
