@@ -24,7 +24,7 @@ const PRODUCTION = true;
 
 if (PRODUCTION) {
   bot.startPolling()
-  bot.startWebhook(`/${data.token}`, null, process.env.PORT);
+  bot.startWebhook(`/${data.token}`, null, 4000);
 } else {
   bot.launch()
       .then(() => console.log("Bot Launched"))
