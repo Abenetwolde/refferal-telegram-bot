@@ -18,18 +18,18 @@ const Server=createServer((req,res)=>{
 const bot = new telegraf(data.token, {telegram: {webhookReply: true}} )
 let db =null
 
-const PRODUCTION = true;
+// const PRODUCTION = true;
 
-// bot.use(stage.middleware());
+// // bot.use(stage.middleware());
 
-if (PRODUCTION) {
-  bot.startPolling(`https://tg-uoz5.onrender.com/${data.token}`)
- // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
-} else {
-  // bot.launch()
-  //     .then(() => console.log("Bot Launched"))
-  //     .catch(console.log);
-}
+// if (PRODUCTION) {
+//   bot.startPolling(`https://tg-uoz5.onrender.com/${data.token}`)
+//  // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
+// } else {
+//   // bot.launch()
+//   //     .then(() => console.log("Bot Launched"))
+//   //     .catch(console.log);
+// }
 const buttonsLimit = {
   window: 1000,
   limit: 1,
@@ -55,8 +55,8 @@ mongo.connect(data.mongoLink, {useNewUrlParser: true, }, (err, client) => {
   }
 
   db = client.db('bot')
-   bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
-// bot.startPolling()
+   //bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
+ bot.startPolling()
 })
 
 
@@ -71,6 +71,11 @@ stage.register(getNumber)
 bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
   let tgData = await bot.telegram.getChatMember(data.channel, ctx.from.id) // user`s status on the channel
   let subscribed
+
+
+
+
+
   ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
   try {
     subscribed? ctx.reply(
@@ -78,7 +83,8 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱የኔ ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱ስልክ ቁጥር ለማስገባት', 'number')],
+        [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -121,7 +127,8 @@ bot.start(async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [ Markup.urlButton('📨 ሰው ለመጋበዝ ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 ስልክ ቁጥር ለማስገባት', 'number')],
+        [ Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -157,7 +164,8 @@ bot.action('main', async (ctx) => {
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.urlButton('📨 ሰው ለመጋበዝ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 ስልክ ቁጥር ለማስገባት', 'number')],
+          [ Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
         ]))
         .webPreview(false)
       )
@@ -194,7 +202,7 @@ bot.action('balance', async (ctx) => {
     let sum, payments
 
     if (thisUsersData[0].virgin) {
-      sum = notPaid.length * 1 + 1
+      sum = notPaid.length * 1 
     } else {
       sum = notPaid.length * 1
     }
@@ -208,7 +216,7 @@ bot.action('balance', async (ctx) => {
       'አሁን ያለዎት ሂሳብ: ' + sum + ' ብር . እስካሁን የጋበዙት ' + allRefs.length + ' ሰው.' + payments,
       Extra
       .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ Back', 'main'), Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
+        [ Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
     )
       .catch((err) => sendError(err, ctx))
@@ -228,7 +236,7 @@ bot.action('withdraw', async (ctx) => {
 
     let sum, friendsLeft
     if (thisUsersData[0].virgin) { // if user hasn`t got gift till
-      sum = notPaid.length *1 + 1
+      sum = notPaid.length *1 
       friendsLeft = 10 - notPaid.length
       minSum = 10
     } else {
@@ -243,7 +251,7 @@ bot.action('withdraw', async (ctx) => {
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.callbackButton('◀️ ዋና ገጽ', 'main')],
-          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')],
+          [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 ስልክ ቁጥር ለማስገባት', 'number')],
         ]))
         .webPreview(false)
       )
@@ -373,11 +381,11 @@ bot.action('get_number', async (ctx) => {
     ctx.scene.enter('getNumber')
   
     ctx.editMessageText(
-      'ስልክ ቁጥርዎን በዚህ ፎርም ያስገቡ +2519********:',
-      Extra
-      .markup(Markup.inlineKeyboard([
-        [Markup.callbackButton('◀️ ስልክ ቁጥርዎን ለማስገባት...', 'number')]
-      ]))
+      'ስልክ ቁጥርዎን በዚህ ፎርም 👇 ከታች ያስገቡ +2519********:',
+      // Extra
+      // .markup(Markup.inlineKeyboard([
+      //   [Markup.callbackButton('👇ስልክዎን ከታች ይጻፉ ...', 'number')]
+      // ]))
       )
         .catch((err) => sendError(err, ctx))
   } catch (err) {
