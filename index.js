@@ -16,7 +16,7 @@ const { text } = config
 const Server=createServer((req,res)=>{
   res.end("server is running")
 })
-const bot = new telegraf(data.token, {telegram: {webhookReply: true}} )
+const bot = new telegraf(data.token, {telegram: {webhookReply: false}} )
 let db =null
 
 const PRODUCTION = true;
@@ -27,9 +27,9 @@ if (!PRODUCTION) {
   bot.startPolling(`https://tg-uoz5.onrender.com/${data.token}`)
  // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
 } else {
- //  bot.launch()
-  //     .then(() => console.log("Bot Launched"))
-  //     .catch(console.log);
+  bot.launch()
+       .then(() => console.log("Bot Launched"))
+       .catch(console.log);
 }
 const buttonsLimit = {
   window: 1000,
@@ -64,7 +64,7 @@ if(connect){
 
  // db = client.db('bot')
   // bot.startWebhook(`https://tg-uoz5.onrender.com/${data.token}`, null, 2104)
-bot.startPolling()
+//bot.startPolling()
 
 const UserSchema = {
   userId: String,
@@ -95,7 +95,8 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [Markup.urlButton('📨 Share link', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱የኔ ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱የኔ ስልክ ቁጥር', 'number')],
+        [ Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -152,7 +153,8 @@ bot.start(async (ctx) => {
       Extra
       .markup(Markup.inlineKeyboard([
         [ Markup.urlButton('📨 ሰው ለመጋበዝ ', 't.me/share/url?url=' + urlencode(text.invite + ctx.from.id))],
-        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')]
+        [Markup.callbackButton('💵 ቀሪ ሂሳብ', 'balance'), Markup.callbackButton('📱 የኔ ስልክ ቁጥር', 'number')],
+        [ Markup.callbackButton('💸 ገንዘብዎን ወጭ ለማረግ ', 'withdraw')]
       ]))
       .webPreview(false)
     ):ctx.reply(
@@ -301,14 +303,15 @@ bot.action('withdraw', async (ctx) => {
     if (thisUsersData.virgin) { // if user hasn`t got gift till
       sum = notPaid.length *1 + 1
       friendsLeft = 10 - notPaid.length
-      minSum = 10
+      minSum = 1
     } else {
       sum = notPaid.length * 1
       friendsLeft = 10 - notPaid.length
-      minSum = 10
+      minSum = 1
     }
 
-    if (!('number' in thisUsersData)) {
+    // if (!('number' in thisUsersData)) {
+      if (!thisUsersData[0].number) {
       return ctx.editMessageText(
         'እባክዎ ስልክ ቁጥርዎን ያስገቡ.',
         Extra
@@ -334,7 +337,7 @@ bot.action('withdraw', async (ctx) => {
       bot.telegram.sendMessage( // send message to admin
         data.admins[1],
         'New request. \nUser: [' + ctx.from.first_name + '](tg://user?id=' + ctx.from.id + ')\n' +
-        'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData.number,
+        'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData[0].number,
         Extra
         .markup(Markup.inlineKeyboard([
           [Markup.callbackButton('✅ Paid', 'paid_' + ctx.from.id)]
@@ -348,7 +351,7 @@ bot.action('withdraw', async (ctx) => {
           {userId: key.userId},{$set: {paid: true}},{upsert: true}
       );
       await User.findOneAndUpdate(
-        {userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData.payments + sum}}, {upsert: true}
+        {userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData[0].payments + sum}}, {upsert: true}
     );
         // db.collection('allUsers').updateOne({userId: key.userId}, {$set: {paid: true}}, {upsert: true}) // mark refs as paid
         //   .catch((err) => sendError(err, ctx))
