@@ -24,7 +24,7 @@ const PRODUCTION = true;
 
 // bot.use(stage.middleware());
 
-if (PRODUCTION) {
+if (!PRODUCTION) {
   bot.startPolling(`https://p2brefferal-api.onrender.com/${data.token}`)
  // bot.telegram.setWebhook(`/${data.token}`, null, 4000);
 } else {
