@@ -58,7 +58,7 @@ bot.use(rateLimit(buttonsLimit))
 mongoose.set("strictQuery", false);
 const connect=mongoose.connect(data.mongoLink, {
    useNewUrlParser: true,
-   useUnifiedTopology: true
+  
 });
 if(connect){
   console.log("connect")
