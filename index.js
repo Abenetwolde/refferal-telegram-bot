@@ -1,6 +1,7 @@
 const telegraf = require('telegraf')
 const config = require('./config')
 const data = require('./data')
+var fs = require('fs');
 // const mongo = require('mongodb').MongoClient
 const mongoose = require("mongoose");
 const urlencode = require('urlencode')
@@ -67,12 +68,16 @@ if(connect){
 //bot.startPolling()
 
 const UserSchema = {
+  Name:String,
   userId: String,
   virgin: String,
   inviter:String,
-  payments: {
-    type: String,
-    default: 1,
+  payments:
+  Number,
+    /* default: 0, */
+  paid:{
+    type:Boolean,
+    default:false
   },
   number:String
 }; 
@@ -90,6 +95,7 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
   let subscribed
   ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
   try {
+    await ctx.replyWithPhoto('https://drive.google.com/file/d/1htPqLltlAqpeURmmV8om5_IQP6WHffYm/view?usp=sharing');
     subscribed? ctx.reply(
       text.hello + ctx.from.id,
       Extra
@@ -128,7 +134,7 @@ bot.hears(/^\/start (.+[1-9]$)/, async (ctx) => {
   //console.log("datavccccccccccccccccccccccccccccccccccc"+dbData)
     if (dbData.length === 0 && ctx.from.id != +ctx.match[1]) {
      console.log(+ctx.match[1]+"no user")
-     const newuser = new User({userId: ctx.from.id, inviter: ctx.match[1], virgin: true, paid: false, payments: 0});
+     const newuser = new User({userId: ctx.from.id,Name:ctx.from.first_name, inviter: ctx.match[1], virgin: true, paid: false, payments: 0});
   
      try {
        await newuser.save();
@@ -148,6 +154,8 @@ bot.start(async (ctx) => {
     let subscribed
     ['creator', 'administrator', 'member'].includes(tgData.status) ? subscribed = true : subscribed = false
   try {
+    await ctx.replyWithPhoto('https://drive.google.com/file/d/1htPqLltlAqpeURmmV8om5_IQP6WHffYm/view?usp=sharing');
+ 
     subscribed? ctx.reply(
       text.hello + ctx.from.id,
       Extra
@@ -173,7 +181,7 @@ bot.start(async (ctx) => {
   });
     //let dbData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
     if (dbData.length === 0) {
-      const newuser = new User({userId: ctx.from.id,virgin: true, payments: 0});
+      const newuser = new User({userId: ctx.from.id,Name:ctx.from.first_name,virgin: true, payments: 0});
   
       try {
         await newuser.save();
@@ -224,7 +232,7 @@ bot.action('main', async (ctx) => {
     const dbData = await User.find({
       userId: ctx.from.id
   });
-  const newuser = new User({userId: ctx.from.id, virgin: true, payments: 0});
+  const newuser = new User({userId: ctx.from.id, Name:ctx.from.first_name,virgin: true, payments: 0});
   
   try {
     await newuser.save();
@@ -249,26 +257,30 @@ bot.action('balance', async (ctx) => {
    let notPaid= await User.find({
     inviter: ctx.from.id, paid: false
 });
+console.log("not paid \n" +notPaid)
 let allRefs= await User.find({
   inviter: ctx.from.id
 });
+console.log("allRefs \n" +allRefs)
     //let allRefs = await db.collection('allUsers').find({inviter: ctx.from.id}).toArray() // all invited users
     let thisUsersData= await User.find({
       userId: ctx.from.id
   });
+  console.log("thisUsersData \n" +thisUsersData)
     //let thisUsersData = await db.collection('allUsers').find({userId: ctx.from.id}).toArray()
     let sum, payments
 
     if (thisUsersData.virgin) {
-      console.log(notPaid)
+  
       sum = notPaid.length * 1 + 1
     } else {
       sum = notPaid.length * 1
     }
-    if (thisUsersData.payments === 0) {
+    if (thisUsersData[0].payments === 0) {
       payments = ''
     } else {
-      payments = '\n ትንሹ ማውጣት የሚችሉት የገንዘብ መጠን : ' + thisUsersData[0].payments
+      payments = '\n ትንሹ ማውጣት የሚችሉት የገንዘብ መጠን : ' + thisUsersData[0]?.payments
+   
     }
   
     ctx.editMessageText(
@@ -301,7 +313,7 @@ bot.action('withdraw', async (ctx) => {
 });
     let sum, friendsLeft
     if (thisUsersData.virgin) { // if user hasn`t got gift till
-      sum = notPaid.length *1 + 1
+      sum = notPaid.length *1 
       friendsLeft = 10 - notPaid.length
       minSum = 1
     } else {
@@ -351,8 +363,12 @@ bot.action('withdraw', async (ctx) => {
           {userId: key.userId},{$set: {paid: true}},{upsert: true}
       );
       await User.findOneAndUpdate(
-        {userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData[0].payments + sum}}, {upsert: true}
+        {userId: ctx.from.id}, {$set: {virgin: false, payments: thisUsersData[0].payments + sum }}, {upsert: true}
+       
     );
+ 
+    console.log( thisUsersData.payments[0] + sum)
+    console.log( ctx.from.id)
         // db.collection('allUsers').updateOne({userId: key.userId}, {$set: {paid: true}}, {upsert: true}) // mark refs as paid
         //   .catch((err) => sendError(err, ctx))
       }
@@ -405,6 +421,10 @@ bot.action('withdraw', async (ctx) => {
 bot.action(/paid_[1-9]/, async (ctx) => {
   try {
     ctx.answerCbQuery()
+    await User.findOneAndUpdate(
+      {inviter: ctx.from.id}, {$set: {inviter: null}}, {upsert: true}
+     
+  );
     let userId = ctx.update.callback_query.data.substr(5)
   
     ctx.editMessageText(ctx.update.callback_query.message.text + '\n\n✅ Paid')
@@ -486,13 +506,35 @@ getNumber.hears(/^.+251[0-9]{9}$/, async (ctx) => { // replace 998 to your count
 
 
 bot.command('getmembers', async (ctx) => {
-  if (data.admins.includes(ctx.from.id)) {
+  if (data.admins.includes(ctx.from.id)) 
+  console.log("ypur are admin")
+  {
     try {
       let dbData= await User.find({
      
     });
+    let balance= await User.find({
+      inviter: dbData.userId
+    });
+    console.log(balance.length)
+    
+    // dbData.map((data)=>   ctx.reply('🌀 All users: ' +data.Name, data.userId ,))
       //let dbData = await db.collection('allUsers').find({}).toArray()
-      ctx.reply('🌀 All users: ' + dbData.length)
+      dbData.map((d)=>      bot.telegram.sendMessage( // send message to admin
+      data.admins[0],
+      
+      'Telegram Id: '+d.userId +'\n'+'Name: '+d.Name+'\n'+'Phone: '+d.number+'\n'+'Paid: '+d.paid+'\n'+'Balance: '+d.payments, 
+     
+    
+      
+      // 'The sum: ' + sum + ' Birr. \nNumber: ' + thisUsersData[0].number,
+      Extra
+      .markup(Markup.inlineKeyboard([
+        [Markup.callbackButton('❌ Delete', 'paid_' + ctx.from.id)]
+      ]))
+      .markdown()
+    ) )
+  
     } catch (err) {
       sendError(err, ctx)
     }
